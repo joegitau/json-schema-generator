@@ -1,7 +1,7 @@
 package joegitau.models
 
 import joegitau.models.FieldType.FieldType
-import play.api.libs.json.{JsValue, Json, OFormat}
+import play.api.libs.json._
 
 case class DynamicFormConfig(fields: Seq[FormField])
 
@@ -93,4 +93,15 @@ object FieldType extends Enumeration {
   type FieldType = Value
 
   val TEXT, TEXTAREA, NUMBER, DATE, CHECKBOX, RADIO, SELECT = Value
+
+  implicit val fieldTypeFormat: OFormat[FieldType] = new OFormat[FieldType] {
+    override def reads(json: JsValue): JsResult[FieldType] =
+      json match {
+        case JsString(str) => JsSuccess(FieldType.withName(str))
+        case _ => JsError("Invalid FieldType value")
+      }
+
+    override def writes(enum: FieldType): JsObject =
+      Json.obj("value" -> enum.toString)
+  }
 }

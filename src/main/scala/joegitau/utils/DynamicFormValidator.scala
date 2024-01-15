@@ -108,15 +108,15 @@ object DynamicFormValidator {
       else "Max cannot be negative".invalidNec
 
     val minLengthValidator: ValidatedNec[String, Option[Int]] =
-      if p.minLength.forall(_ >= 0)) p.minLength.validNec
+      if (p.minLength.forall(_ >= 0)) p.minLength.validNec
       else "MinLength cannot be negative".invalidNec
 
     val maxLengthValidator: ValidatedNec[String, Option[Int]] =
-      if p.maxLength.forall(_ >= 0))  p.maxLength.validNec
+      if (p.maxLength.forall(_ >= 0))  p.maxLength.validNec
       else "MaxLength cannot be negative".invalidNec
 
     val colsValidator: ValidatedNec[String, Option[Int]] =
-      if p.cols.forall(_ > 0)) p.cols.validNec
+      if (p.cols.forall(_ > 0)) p.cols.validNec
       else "Cols must be greater than 0".invalidNec
 
     val readonlyValidator: ValidatedNec[String, Option[Boolean]] =
@@ -160,22 +160,22 @@ object DynamicFormValidator {
     values.groupBy(identity).collect { case (v, List(_, _, _*)) => v }
 
   private def validateStringField(f: FormField): ValidatedNec[String, Option[JsValue]] = {
-    val minLengthValidation = f.fields.props.minLength.fold(().validNec) { minLength =>
+    val minLengthValidation = f.fields.props.minLength.fold("".validNec[String]) { minLength =>
       f.value
         .collect {
           case JsString(value) if value.length < minLength =>
             "Value is shorter than the minimum length defined".invalidNec
         }
-        .getOrElse(().validNec)
+        .getOrElse("".validNec)
     }
 
-    val maxLengthValidation = f.fields.props.maxLength.fold(().validNec) { maxLength =>
+    val maxLengthValidation = f.fields.props.maxLength.fold("".validNec[String]) { maxLength =>
       f.value
         .collect {
           case JsString(value) if value.length > maxLength =>
             "Value is longer than the maximum length defined".invalidNec
         }
-        .getOrElse(().validNec)
+        .getOrElse("".validNec)
     }
 
     (minLengthValidation, maxLengthValidation).mapN { case (_, _) =>
