@@ -1,0 +1,7 @@
+.Ds_Store
+.bsp
+.idea
+.staging
+target
+project/target
+logs
