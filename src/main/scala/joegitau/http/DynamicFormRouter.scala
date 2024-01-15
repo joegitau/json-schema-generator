@@ -1,18 +1,24 @@
 package joegitau.http
 
+import joegitau.utils.FormHelper
+import org.apache.pekko.http.scaladsl.model.StatusCodes
 import org.apache.pekko.http.scaladsl.server.Directives.{complete, path}
 import org.apache.pekko.http.scaladsl.server.{Directives, Route}
-import play.api.libs.json.JsObject
+import play.api.libs.json.{JsObject, Json}
 
-class DynamicFormRouter {
-  def getDynamicForm(model: JsObject): Route =
-    path("/api/form") {
+class DynamicFormRouter extends FormHelper {
+  private lazy val publisherForm = _publisherForm
+  private val publisherModel = loadValidatedModelAsJson(publisherForm)
+
+  private def getDynamicForm(model: JsObject): Route = {
+    path("model") {
       Directives.get {
-        complete {
-          model.toString()
-        }
+        complete(StatusCodes.OK, Json.prettyPrint(model))
       }
     }
+  }
+
+  val routes: Route = getDynamicForm(publisherModel)
 }
 
 object DynamicFormRouter {

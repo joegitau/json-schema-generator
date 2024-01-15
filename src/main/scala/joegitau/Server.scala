@@ -8,7 +8,7 @@ import org.apache.pekko.http.scaladsl.server.Route
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.{Failure, Success}
 
-object Server {
+object Server extends App {
   private lazy val interface = "localhost"
   private lazy val port      = 8080
 
