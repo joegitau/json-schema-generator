@@ -2,7 +2,7 @@ import scala.collection.Seq
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
-ThisBuild / scalaVersion := "3.1.3"
+ThisBuild / scalaVersion := "2.13.12" // 3.1.3
 
 lazy val pekkoVersion = "1.0.1"
 lazy val pekkoHttpVersion = "1.0.0"
@@ -34,12 +34,4 @@ ThisBuild / scalacOptions ++= Seq(
   "-language:experimental.macros",
   "-language:higherKinds",
   "-language:implicitConversions",
-  "-Ykind-projector",
-  "-Wvalue-discard",
-  "-Wunused:implicits",
-  "-Wunused:explicits",
-  "-Wunused:imports",
-  "-Wunused:locals",
-  "-Wunused:params",
-  "-Wunused:privates",
 )
