@@ -2,26 +2,22 @@ package joegitau.utils
 
 import cats.data._
 import cats.implicits._
-import joegitau.models.FieldType.FieldType
+import joegitau.models._
 import play.api.libs.json.{JsNumber, JsString, JsValue}
-import joegitau.models.{DynamicFormConfig, FieldType, FormField, InputConfig, Props, SelectOption}
 
 object DynamicFormValidator {
   private def validateFormField(f: FormField): ValidatedNec[String, FormField] = {
     val keyValidator: ValidatedNec[String, String] =
       if (f.fields.key.nonEmpty) f.fields.key.validNec
-      else "Key must be provided".invalidNec
-
-    val fieldTypeValidator: ValidatedNec[String, FieldType] = f.fields.`type`.validNec
+      else s"Key must be provided on '${f.fields.props.label.getOrElse("")}'".invalidNec
 
     val defaultValueValidator: ValidatedNec[String, Option[String]] = f.fields.`type` match {
       case FieldType.CHECKBOX if f.fields.defaultValue.isEmpty =>
-        "Default value must be provided for checkbox".invalidNec
+        s"Default value must be provided for checkbox on '${f.fields.props.label.getOrElse("")}'".invalidNec
       case FieldType.SELECT | FieldType.RADIO
         if f.fields.defaultValue.isDefined && !f.fields.props.options
-          .map(_.value)
-          .contains(f.fields.defaultValue.get) =>
-        "Default value must be one of the options provided".invalidNec
+          .exists(_.exists(_.value == f.fields.defaultValue.get)) =>
+        s"Default value must be one of the options provided on '${f.fields.props.label.getOrElse("")}'".invalidNec
       case _ => f.fields.defaultValue.validNec
     }
 
@@ -53,15 +49,18 @@ object DynamicFormValidator {
     val valueValidator: ValidatedNec[String, Option[JsValue]] = {
       (f.fields.`type`, f.value) match {
         case (FieldType.NUMBER, Some(v: JsNumber)) => f.value.validNec
-        case (FieldType.NUMBER, _) => "Value must be a Number for NUMBER fields".invalidNec
+        case (FieldType.NUMBER, None) => f.value.validNec // treat None as valid
+        case (FieldType.NUMBER, _) => s"Value must be a Number for NUMBER fields on '${f.fields.props.label.getOrElse("")}'".invalidNec
 
         case (FieldType.TEXT | FieldType.TEXTAREA, Some(v: JsString)) => validateStringField(f)
-        case (FieldType.TEXT | FieldType.TEXTAREA, _) => "Value must be a String for String fields".invalidNec
+        case (FieldType.TEXT | FieldType.TEXTAREA, None) => f.value.validNec // treat None as valid
+        case (FieldType.TEXT | FieldType.TEXTAREA, _) => s"Value must be a String for String fields '${f.fields.props.label.getOrElse("")}'".invalidNec
 
         case (FieldType.DATE, Some(v: JsString)) =>
           if (isValidDate(v.value)) f.value.validNec
-          else "Value must be a valid date for DATE fields".invalidNec
-        case (FieldType.DATE, _) => "Value must be a valid date string for DATE fields".invalidNec
+          else s"Value must be a valid date for DATE fields on '${f.fields.props.label.getOrElse("")}'".invalidNec
+        case (FieldType.DATE, None) => f.value.validNec // treat None as valid
+        case (FieldType.DATE, _) => s"Value must be a valid date string for DATE fields on '${f.fields.props.label.getOrElse("")}'".invalidNec
 
         case _ => f.value.validNec // for other field types, no specific validation is needed
       }
@@ -69,82 +68,58 @@ object DynamicFormValidator {
 
     // format: off
     (
-      keyValidator, fieldTypeValidator, defaultValueValidator, valueValidator, expressionsValidator,
+      keyValidator, defaultValueValidator, valueValidator, expressionsValidator,
       validateProps(f.fields.props, f),
-    ).mapN { (key, fieldType, defaultValue, value, expressions, props) =>
+    ).mapN { (key, defaultValue, value, expressions, props) =>
       FormField(
-        InputConfig(key, fieldType, props, defaultValue, f.fields.className, expressions),
+        InputConfig(key, f.fields.`type`, props, defaultValue, f.fields.className, expressions),
         value,
       )
     }
   }
 
   private def validateProps(p: Props, f: FormField): ValidatedNec[String, Props] = {
-    val optionsValidator: ValidatedNec[String, Seq[SelectOption]] = f.fields.`type` match {
+    val optionsValidator: ValidatedNec[String, Option[Seq[SelectOption]]] = f.fields.`type` match {
       case FieldType.SELECT | FieldType.RADIO | FieldType.CHECKBOX if p.options.isEmpty =>
-        s"Options must be provided for ${f.fields.`type`}".invalidNec
+        s"Options must be provided for ${f.fields.`type`} on '${f.fields.props.label.getOrElse("")}'".invalidNec
       case _ => p.options.validNec
-    }
-
-    val requiredValidator: ValidatedNec[String, Option[Boolean]] = {
-      f.fields.props.required match {
-        case Some(value) => value.some.validNec
-        case None => "Required must be a boolean value".invalidNec
-      }
     }
 
     val multipleValidator: ValidatedNec[String, Option[Boolean]] = f.fields.`type` match {
       case FieldType.CHECKBOX | FieldType.SELECT if p.multiple.isEmpty =>
-        "Multiple must be specified for checkbox or select fields".invalidNec
+        s"Multiple must be specified for checkbox or select fields on '${f.fields.props.label.getOrElse("")}'".invalidNec
       case _ => p.multiple.validNec
     }
 
     val minValidator: ValidatedNec[String, Option[Int]] =
       if (p.min.forall(_ >= 0)) p.min.validNec
-      else "Min cannot be negative".invalidNec
+      else s"Min cannot be negative on '${f.fields.props.label.getOrElse("")}'".invalidNec
 
     val maxValidator: ValidatedNec[String, Option[Int]] =
       if (p.max.forall(_ >= 0)) p.max.validNec
-      else "Max cannot be negative".invalidNec
+      else s"Max cannot be negative on '${f.fields.props.label.getOrElse("")}'".invalidNec
 
     val minLengthValidator: ValidatedNec[String, Option[Int]] =
       if (p.minLength.forall(_ >= 0)) p.minLength.validNec
-      else "MinLength cannot be negative".invalidNec
+      else s"MinLength cannot be negative on '${f.fields.props.label.getOrElse("")}'".invalidNec
 
     val maxLengthValidator: ValidatedNec[String, Option[Int]] =
       if (p.maxLength.forall(_ >= 0))  p.maxLength.validNec
-      else "MaxLength cannot be negative".invalidNec
+      else s"MaxLength cannot be negative on '${f.fields.props.label.getOrElse("")}'".invalidNec
 
     val colsValidator: ValidatedNec[String, Option[Int]] =
       if (p.cols.forall(_ > 0)) p.cols.validNec
-      else "Cols must be greater than 0".invalidNec
-
-    val readonlyValidator: ValidatedNec[String, Option[Boolean]] =
-      p.readonly match {
-        case Some(value: Boolean) => value.some.validNec
-        case None => "Readonly must be a boolean value".invalidNec
-      }
-
-    val disabledValidator: ValidatedNec[String, Option[Boolean]] =
-      p.disabled match {
-        case Some(value: Boolean) => value.some.validNec
-        case None => "Disabled must be a boolean value".invalidNec
-      }
-
-    val patternValidator: ValidatedNec[String, Option[String]] =
-      p.pattern match {
-        case Some(value: String) => value.some.validNec
-        case None => "Pattern must be a regular expression".invalidNec // doesn't really validate regex (Scala compiler should?)
-      }
+      else s"Cols must be greater than 0 on '${f.fields.props.label.getOrElse("")}'".invalidNec
 
     // format: off
     (
-      optionsValidator, requiredValidator, multipleValidator, minValidator, maxValidator,
-      minLengthValidator, maxLengthValidator, colsValidator, readonlyValidator, disabledValidator, patternValidator,
-    ).mapN { (opts, required, multiple, min, max, minLength, maxLength, cols, readonly, disabled, pattern) =>
+      optionsValidator,  multipleValidator, minValidator, maxValidator,
+      minLengthValidator, maxLengthValidator, colsValidator
+    ).mapN { (opts, multiple, min, max, minLength, maxLength, cols) =>
       Props(
-        f.fields.props.label, f.fields.props.placeholder, opts, required, multiple,
-        f.fields.props.description, min, max, minLength, maxLength, cols, readonly, disabled, pattern,
+        f.fields.props.label, f.fields.props.placeholder, opts, f.fields.props.required, multiple,
+        f.fields.props.description, min, max, minLength, maxLength, cols, f.fields.props.readonly,
+        f.fields.props.disabled, f.fields.props.pattern,
       )
     }
   }

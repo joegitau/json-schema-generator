@@ -18,6 +18,7 @@ class DynamicFormRouter extends FormHelper {
     }
   }
 
+  // val jsObj = Json.toJson(publisherForm).as[JsObject]
   val routes: Route = getDynamicForm(publisherModel)
 }
 

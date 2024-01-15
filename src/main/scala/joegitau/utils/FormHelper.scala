@@ -3,7 +3,7 @@ package joegitau.utils
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits.{catsSyntaxOptionId, toFoldableOps}
-import joegitau.models.{DynamicFormConfig, FieldType, FormField, InputConfig, Props, SelectOption, ValidationConfig}
+import joegitau.models._
 import play.api.libs.json.{JsArray, JsObject, JsString, Json}
 
 trait FormHelper {
@@ -47,7 +47,7 @@ trait FormHelper {
               SelectOption("fin", "fin"),
               SelectOption("eng", "eng"),
               SelectOption("swe", "swe"),
-            ),
+            ).some,
             required = true.some,
           ),
           defaultValue = "fin".some,
@@ -63,7 +63,7 @@ trait FormHelper {
               SelectOption("FIN", "FIN"),
               SelectOption("ENG", "ENG"),
               SelectOption("SWE", "SWE"),
-            ),
+            ).some,
             required = true.some,
           ),
           defaultValue = "FIN".some,
@@ -78,7 +78,7 @@ trait FormHelper {
             options = Seq(
               SelectOption("WithDescription", "withDesc"),
               SelectOption("WithoutDescription", "withoutDesc"),
-            ),
+            ).some,
             required = true.some,
           ),
           defaultValue = "withoutDesc".some,
@@ -96,7 +96,7 @@ trait FormHelper {
               SelectOption("A5", "A5"),
               SelectOption("A6", "A6"),
               SelectOption("16-9", "16-9", true.some),
-            ),
+            ).some,
             required = true.some,
           ),
           defaultValue = "A4".some,
@@ -112,7 +112,7 @@ trait FormHelper {
               SelectOption("Product codes", "prodCodes"),
               SelectOption("From ERP", "erp"),
               SelectOption("Hierarchy tree", "tree"),
-            ),
+            ).some,
           ),
           defaultValue = "prodCodes".some,
         )

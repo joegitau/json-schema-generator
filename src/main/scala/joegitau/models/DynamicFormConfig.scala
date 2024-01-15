@@ -61,9 +61,9 @@ object ValidationConfig {
 case class Props(
   label: Option[String] = None,
   placeholder: Option[String] = None,
-  options: Seq[SelectOption] = Seq(),
-  required: Option[Boolean] = Some(false),
-  multiple: Option[Boolean] = None,
+  options: Option[Seq[SelectOption]] = None,
+  required: Option[Boolean] = None,
+  multiple: Option[Boolean] = Some(false),
   description: Option[String] = None,
   min: Option[Int] = None,
   max: Option[Int] = None,
