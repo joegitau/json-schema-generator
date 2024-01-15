@@ -26,3 +26,20 @@ lazy val root = (project in file("."))
       "org.scalatestplus.play" %% "scalatestplus-play"          % "7.0.0" % Test,
     )
   )
+
+ThisBuild / semanticdbEnabled := true
+
+ThisBuild / scalacOptions ++= Seq(
+  "-feature",
+  "-language:experimental.macros",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-Ykind-projector",
+  "-Wvalue-discard",
+  "-Wunused:implicits",
+  "-Wunused:explicits",
+  "-Wunused:imports",
+  "-Wunused:locals",
+  "-Wunused:params",
+  "-Wunused:privates",
+)
