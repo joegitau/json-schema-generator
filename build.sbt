@@ -21,7 +21,7 @@ lazy val root = (project in file("."))
       // serializers
       "org.playframework"      %% "play-json"                   % playJsonVersion,
       "org.typelevel"          %% "cats-core"                   % "2.10.0",
-      "io.spray"               %%  "spray-json"                 % "1.3.6",
+      "io.spray"               %% "spray-json"                  % "1.3.6",
 
 // tests
       "org.scalatest"          %% "scalatest"                   % "3.2.17" % Test,
