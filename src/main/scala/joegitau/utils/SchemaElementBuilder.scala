@@ -1,6 +1,5 @@
 package joegitau.utils
 
-import com.sun.org.apache.xalan.internal.lib.ExsltDatetime.year
 import joegitau.models._
 
 object SchemaElementBuilder {
