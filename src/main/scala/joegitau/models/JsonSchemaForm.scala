@@ -1,5 +1,7 @@
 package joegitau.models
 
+import play.api.libs.json.{Json, OFormat}
+
 trait SchemaElement {
   def toJsonSchema: Map[String, Any]
 }
@@ -23,6 +25,10 @@ case class StringField(
         "pattern" -> pattern.getOrElse("")
       )
     )
+}
+
+object StringField {
+  implicit val stringFieldFormat: OFormat[StringField] = Json.format
 }
 
 /* Number: used for validating integer and float values */
@@ -52,6 +58,10 @@ case class NumberField(
   }
 }
 
+object NumberField {
+  implicit val numberFieldFormat: OFormat[NumberField] = Json.format
+}
+
 case class BooleanField(id: String, description: String) extends SchemaElement {
   def toJsonSchema: Map[String, Any] = {
     Map(
@@ -63,6 +73,10 @@ case class BooleanField(id: String, description: String) extends SchemaElement {
   }
 }
 
+object BooleanField {
+  implicit val booleanFieldFormat: OFormat[BooleanField] = Json.format
+}
+
 case class NullField(id: String, description: String) extends SchemaElement {
   def toJsonSchema: Map[String, Any] = {
     Map(
@@ -72,6 +86,10 @@ case class NullField(id: String, description: String) extends SchemaElement {
       )
     )
   }
+}
+
+object NullField {
+  implicit val nullFieldFormat: OFormat[NullField] = Json.format
 }
 
 case class ArrayField(
@@ -96,6 +114,10 @@ case class ArrayField(
       )
     )
   }
+}
+
+object ArrayField {
+  implicit val arrayFieldFormat: OFormat[ArrayField] = Json.format
 }
 
 case class ObjectField(
@@ -125,6 +147,10 @@ case class ObjectField(
   }
 }
 
+object ObjectField {
+  implicit val objectFieldFormat: OFormat[ObjectField] = Json.format
+}
+
 /**
  * $schema: specifies which draft of the JSON Schema standard the schema adheres to.
  * $id: sets a URI for the schema - which is useful for referencing elements of the schema from inside the schema document
@@ -151,4 +177,8 @@ case class JsonSchemaForm(
       "properties" -> properties.flatMap(_.toJsonSchema).toMap,
       "required" -> required
     )
+}
+
+object JsonSchemaForm {
+  implicit val schemaFormFormat: OFormat[JsonSchemaForm] = Json.format
 }

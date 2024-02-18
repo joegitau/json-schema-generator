@@ -1,6 +1,6 @@
 package joegitau
 
-import joegitau.http.{CoreRouter, DynamicFormRouter}
+import joegitau.http.{CoreRouter, DynamicFormRouter, JsonSchemaFormRouter}
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.http.scaladsl.Http
 import org.apache.pekko.http.scaladsl.server.Route
@@ -29,8 +29,10 @@ object Server extends App {
   }
 
   // Create instances of routers
-  private val dynamicFormRouter = DynamicFormRouter()
-  private val coreRouter = new CoreRouter(dynamicFormRouter)
+  private val dynamicFormRouter    = DynamicFormRouter()
+  private val jsonSchemaFormRouter = JsonSchemaFormRouter()
+
+  private val coreRouter = new CoreRouter(dynamicFormRouter, jsonSchemaFormRouter)
 
   // Start the server with CoreRouter's routes
   startHttpServer(coreRouter.coreRoutes)

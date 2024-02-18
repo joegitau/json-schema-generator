@@ -1,5 +1,5 @@
 package joegitau.models
-
+/*
 case class ReferenceField(id: String, description: String, ref: String) extends SchemaElement {
   override def toJsonSchema: Map[String, Any] = {
     Map(
@@ -56,7 +56,7 @@ case class SelectDropdownField(
 
 // ---------------------------------------------------------------------------------------------------------------------
 // 3. define builder functions (inputField, selectDropdown, etc.) that create instances of the form elements.
-/*
+
 def inputField(
   id: String,
   label: String,
@@ -97,7 +97,7 @@ def objectField(
 ): ObjectField = ObjectField(id, description, properties.toMap, required, minProperties, maxProperties, additionalProperties)
 
 // when invoking objectField - use two sets of parentheses:
-/*
+
   val productField = objectField(
   "product",
   "Product details",
@@ -107,14 +107,13 @@ def objectField(
   required = List("id", "name")
 )
 
- */
 
 
 
 
 
 
-/*
+
 // define a case class for FormSchema
 case class FormSchema(
   schema: String,
@@ -153,7 +152,7 @@ case class FormSchema(
 
   val jsonSchema = formSchema.toJsonSchema
 
-/*
+
 
 def addValidationRule(field: Field, rule: ValidationRule): Field =
   field match {
@@ -169,9 +168,9 @@ def setRequired(field: Field): Field =
     case f: NumberInputField => f.copy(isRequired = true)
   }
 
- */
 
-/* case class NumericInputField(
+
+case class NumericInputField(
   override val id: String,
   label: String,
   override val minimum: Option[Int] = None,
@@ -184,4 +183,5 @@ def numericInputField(
   minimum: Option[Int] = None,
   maximum: Option[Int] = None
 ): NumericInputField = NumericInputField(id, label, minimum, maximum)
+
 */

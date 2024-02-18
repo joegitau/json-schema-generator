@@ -2,7 +2,7 @@ package joegitau.utils
 
 import joegitau.models._
 
-object SchemaElementBuilder {
+trait SchemaElementBuilder {
   def stringField(id: String, description: String): StringField =
     StringField(id, description)
 
@@ -91,3 +91,5 @@ object SchemaElementBuilder {
   }
 
 }
+
+object SchemaElementBuilder extends SchemaElementBuilder
