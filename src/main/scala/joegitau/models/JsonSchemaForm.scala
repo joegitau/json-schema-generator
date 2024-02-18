@@ -1,6 +1,7 @@
 package joegitau.models
 
-import play.api.libs.json.{Format, JsError, JsResult, JsValue, Json, OFormat}
+import joegitau.models.EitherFormat._
+import play.api.libs.json._
 
 trait SchemaElement {
   def toJsonSchema: Map[String, Any]
@@ -176,6 +177,19 @@ case class ObjectField(
 
 object ObjectField {
   implicit val objectFieldFormat: OFormat[ObjectField] = Json.format
+}
+
+object EitherFormat {
+  implicit val eitherFormat: Format[Either[Boolean, SchemaElement]] = new Format[Either[Boolean, SchemaElement]] {
+    override def writes(o: Either[Boolean, SchemaElement]): JsValue = o match {
+      case Left(bool)  => Json.toJson(bool)
+      case Right(elem) => Json.toJson(elem)
+    }
+
+    override def reads(json: JsValue): JsResult[Either[Boolean, SchemaElement]] =
+      json.validate[Boolean].map(Left(_))
+        .orElse(json.validate[SchemaElement].map(Right(_)))
+  }
 }
 
 /**
