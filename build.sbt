@@ -7,6 +7,7 @@ ThisBuild / scalaVersion := "2.13.12" // 3.1.3
 lazy val pekkoVersion = "1.0.1"
 lazy val pekkoHttpVersion = "1.0.0"
 lazy val playJsonVersion = "3.0.0"
+lazy val jsonSchemaVersion = "0.7.11"
 
 lazy val root = (project in file("."))
   .settings(
@@ -22,6 +23,10 @@ lazy val root = (project in file("."))
       "org.playframework"      %% "play-json"                   % playJsonVersion,
       "org.typelevel"          %% "cats-core"                   % "2.10.0",
       "io.spray"               %% "spray-json"                  % "1.3.6",
+      // json-schema
+      "com.github.andyglow"    %% "scala-jsonschema"            % jsonSchemaVersion,
+      "com.github.andyglow"    %% "scala-jsonschema-core"       % jsonSchemaVersion,
+      "com.github.andyglow"    %% "scala-jsonschema-macros"     % jsonSchemaVersion % Provided,
 
 // tests
       "org.scalatest"          %% "scalatest"                   % "3.2.17" % Test,
