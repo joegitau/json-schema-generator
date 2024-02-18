@@ -1,9 +1,36 @@
 package joegitau.models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, JsError, JsResult, JsValue, Json, OFormat}
 
 trait SchemaElement {
   def toJsonSchema: Map[String, Any]
+}
+
+object SchemaElement {
+  implicit val schemaElementFormat: Format[SchemaElement] = new Format[SchemaElement] {
+    override def writes(o: SchemaElement): JsValue = o match {
+      case s: StringField  => Json.toJson(s)
+      case n: NumberField  => Json.toJson(n)
+      case b: BooleanField => Json.toJson(b)
+      case e: NullField    => Json.toJson(e)
+      case a: ArrayField   => Json.toJson(a)
+      case o: ObjectField  => Json.toJson(o)
+      case _               => Json.obj("error" -> "UnknownSchemaElement")
+    }
+
+    override def reads(json: JsValue): JsResult[SchemaElement] = {
+      // determine type of the SchemaElement from the "type" property
+      (json \ "type").as[String] match {
+        case "string"  => json.validate[StringField]
+        case "number"  => json.validate[NumberField]
+        case "boolean" => json.validate[BooleanField]
+        case "null"    => json.validate[NullField]
+        case "array"   => json.validate[ArrayField]
+        case "object"  => json.validate[ObjectField]
+        case _         => JsError("Invalid SchemaElement type")
+      }
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -141,7 +168,7 @@ case class ObjectField(
         "additionalProperties" -> additionalProperties.map {
           case Left(bool)           => bool
           case Right(schemaElement) => schemaElement.toJsonSchema
-        }.getOrElse(true)
+        }.getOrElse(false)
       )
     )
   }
