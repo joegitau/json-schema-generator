@@ -1,29 +1,29 @@
 package joegitau.utils
 
+import joegitau.models.FieldFormat.FieldFormat
 import joegitau.models._
 
 trait SchemaElementBuilder {
-  def stringField(id: String, description: String): StringField =
-    StringField(id, description)
+  def stringField(description: String): StringField =
+    StringField(description)
 
-  def numberField(id: String, description: String): NumberField =
-    NumberField(id, description)
+  def numberField(description: String): NumberField =
+    NumberField(description)
 
-  def booleanField(id: String, description: String): BooleanField =
-    BooleanField(id, description)
+  def booleanField(description: String): BooleanField =
+    BooleanField( description)
 
-  def nullField(id: String, description: String): NullField =
-    NullField(id, description)
+  def nullField(description: String): NullField =
+    NullField(description)
 
-  def arrayField(id: String, description: String, items: SchemaElement): ArrayField =
-    ArrayField(id, description, items)
+  def arrayField(description: String, items: SchemaElement): ArrayField =
+    ArrayField(description, items)
 
   def objectField(
-    id: String,
     description: String,
     properties: Map[String, SchemaElement],
     required: List[String]
-  ): ObjectField = ObjectField(id, description, properties, required)
+  ): ObjectField = ObjectField(description, properties, required)
 
   def jsonSchemaForm(id: String, `type`: String): JsonSchemaForm =
     JsonSchemaForm(
@@ -36,17 +36,19 @@ trait SchemaElementBuilder {
 
   // implicit elementBuilder classes
   implicit class StringFieldOps(field: StringField) {
-    def withMinLength(minLength: Int): StringField = field.copy(minLength = Some(minLength))
-    def withMaxLength(maxLength: Int): StringField = field.copy(maxLength = Some(maxLength))
-    def withPattern(pattern: String): StringField  = field.copy(pattern = Some(pattern))
+    def withMinLength(minLength: Int): StringField   = field.copy(minLength = Some(minLength))
+    def withMaxLength(maxLength: Int): StringField   = field.copy(maxLength = Some(maxLength))
+    def withPattern(pattern: String): StringField    = field.copy(pattern = Some(pattern))
+    def withFormat(format: FieldFormat): StringField = field.copy(format = Some(format))
   }
 
   implicit class NumberFieldOps(field: NumberField) {
-    def withMin(min: Int): NumberField = field.copy(minimum = Some(min))
-    def withMax(max: Int): NumberField = field.copy(maximum = Some(max))
-    def withExclusiveMin(exclMin: Int): NumberField         = field.copy(exclusiveMinimum = Some(exclMin))
-    def withExclusiveMax(exclMax: Int): NumberField         = field.copy(exclusiveMaximum = Some(exclMax))
-    def multipleOf(multipleOf: Int): NumberField            = field.copy(multipleOf = Some(multipleOf))
+    def withMin(min: Int): NumberField               = field.copy(minimum = Some(min))
+    def withMax(max: Int): NumberField               = field.copy(maximum = Some(max))
+    def withExclusiveMin(exclMin: Int): NumberField  = field.copy(exclusiveMinimum = Some(exclMin))
+    def withExclusiveMax(exclMax: Int): NumberField  = field.copy(exclusiveMaximum = Some(exclMax))
+    def withMultipleOf(multipleOf: Int): NumberField = field.copy(multipleOf = Some(multipleOf))
+    def withFormat(format: FieldFormat): NumberField = field.copy(format = Some(format))
   }
 
   implicit class ArrayFieldOps(field: ArrayField) {
@@ -86,8 +88,8 @@ trait SchemaElementBuilder {
     def withRequired(required: List[String]): JsonSchemaForm =
       schema.copy(required = required)
 
-    def withSchemaYear(schemaVersion: String): JsonSchemaForm =
-      schema.copy(schema = schemaVersion)
+    def withSchemaVersion(version: String): JsonSchemaForm =
+      schema.copy(schema = version)
   }
 
 }
