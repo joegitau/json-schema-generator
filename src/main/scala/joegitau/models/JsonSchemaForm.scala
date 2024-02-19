@@ -32,6 +32,7 @@ object SchemaElement {
 case class StringField(
   description: String,
   `type`: String = "string",
+  default: Option[String] = None,
   minLength: Option[Int] = None,
   maxLength: Option[Int] = None,
   pattern: Option[String] = None,
@@ -46,6 +47,7 @@ object StringField {
 case class NumberField(
   description: String,
   `type`: String = "number",
+  default: Option[Int] = None,
   multipleOf: Option[Int] = None,
   minimum: Option[Int] = None,
   exclusiveMinimum: Option[Int] = None,
@@ -87,9 +89,9 @@ object ArrayField {
 
 case class ObjectField(
   description: String,
-  properties: Map[String, SchemaElement],
-  required: List[String],
   `type`: String = "object",
+  properties: Option[Map[String, SchemaElement]] = None,
+  required: Option[List[String]] = None,
   minProperties: Option[Int] = None,
   maxProperties: Option[Int] = None,
   additionalProperties: Option[Either[Boolean, SchemaElement]] = None,

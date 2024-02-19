@@ -15,15 +15,15 @@ trait SchemaFormHelper extends SchemaElementBuilder {
       "lastName" -> stringField("Last Name"),
       "age" -> numberField("Age").withMin(18),
       "email" -> stringField("Email address").withFormat(FieldFormat.email),
-      "address" -> objectField(
-        "Address",
-        Map(
-          "city" -> stringField("City"),
-          "postalCode" -> numberField("Postal code"),
-          "country" -> stringField("Country")
-        ),
-        required = "address" :: Nil
-      )
+      "address" -> objectField("Address")
+        .withProperties(
+          Map(
+            "city" -> stringField("City"),
+            "postalCode" -> numberField("Postal code"),
+            "country" -> stringField("Country")
+          )
+        )
+        .withRequired("address" :: Nil)
     )
 
   private lazy val userSchema: JsonSchemaForm = jsonSchemaForm("user", "object")

@@ -5,26 +5,17 @@ import joegitau.models.ObjectField.BoolOrSchemaElement
 import joegitau.models._
 
 trait SchemaElementBuilder {
-  def stringField(description: String): StringField =
-    StringField(description)
+  def stringField(description: String): StringField = StringField(description)
 
-  def numberField(description: String): NumberField =
-    NumberField(description)
+  def numberField(description: String): NumberField = NumberField(description)
 
-  def booleanField(description: String): BooleanField =
-    BooleanField( description)
+  def booleanField(description: String): BooleanField = BooleanField( description)
 
-  def nullField(description: String): NullField =
-    NullField(description)
+  def nullField(description: String): NullField = NullField(description)
 
-  def arrayField(description: String, items: SchemaElement): ArrayField =
-    ArrayField(description, items)
+  def arrayField(description: String, items: SchemaElement): ArrayField = ArrayField(description, items)
 
-  def objectField(
-    description: String,
-    properties: Map[String, SchemaElement],
-    required: List[String]
-  ): ObjectField = ObjectField(description, properties, required)
+  def objectField(description: String): ObjectField = ObjectField(description)
 
   def jsonSchemaForm(id: String, `type`: String): JsonSchemaForm =
     JsonSchemaForm(
@@ -37,6 +28,7 @@ trait SchemaElementBuilder {
 
   // implicit elementBuilder classes
   implicit class StringFieldOps(field: StringField) {
+    def withDefault(value: String): StringField      = field.copy(default = Some(value))
     def withMinLength(minLength: Int): StringField   = field.copy(minLength = Some(minLength))
     def withMaxLength(maxLength: Int): StringField   = field.copy(maxLength = Some(maxLength))
     def withPattern(pattern: String): StringField    = field.copy(pattern = Some(pattern))
@@ -44,6 +36,7 @@ trait SchemaElementBuilder {
   }
 
   implicit class NumberFieldOps(field: NumberField) {
+    def withDefault(value: Int): NumberField         = field.copy(default = Some(value))
     def withMin(min: Int): NumberField               = field.copy(minimum = Some(min))
     def withMax(max: Int): NumberField               = field.copy(maximum = Some(max))
     def withExclusiveMin(exclMin: Int): NumberField  = field.copy(exclusiveMinimum = Some(exclMin))
@@ -61,10 +54,10 @@ trait SchemaElementBuilder {
 
   implicit class ObjectFieldOps(field: ObjectField) {
     def withProperties(props: Map[String, SchemaElement]): ObjectField =
-      field.copy(properties = props)
+      field.copy(properties = Some(props))
 
     def withRequired(required: List[String]): ObjectField =
-      field.copy(required = required)
+      field.copy(required = Some(required))
 
     def withMinProperties(minProps: Int): ObjectField =
       field.copy(minProperties = Some(minProps))
