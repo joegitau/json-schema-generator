@@ -4,11 +4,18 @@ import joegitau.models.EitherFormat._
 import play.api.libs.json._
 
 trait SchemaElement {
+  def id: String
   def toJsonSchema: Map[String, Any]
 }
 
 object SchemaElement {
-  implicit val schemaElementFormat: Format[SchemaElement] = new Format[SchemaElement] {
+  import ArrayField.arrayFieldWrites
+  import BooleanField.booleanFieldWrites
+  import NullField.nullFieldWrites
+  import NumberField.numberFieldWrites
+  import ObjectField.objectFieldWrites
+  import StringField.stringFieldWrites
+  /* implicit val schemaElementFormat: Format[SchemaElement] = new Format[SchemaElement] {
     override def writes(o: SchemaElement): JsValue = o match {
       case s: StringField  => Json.toJson(s)
       case n: NumberField  => Json.toJson(n)
@@ -31,7 +38,19 @@ object SchemaElement {
         case _         => JsError("Invalid SchemaElement type")
       }
     }
+  } */
+
+
+  implicit val schemaElementWrites: OWrites[SchemaElement] = OWrites {
+    case sf: StringField  => stringFieldWrites.writes(sf)
+    case nf: NumberField  => numberFieldWrites.writes(nf)
+    case nuf: NullField   => nullFieldWrites.writes(nuf)
+    case bf: BooleanField => booleanFieldWrites.writes(bf)
+    case af: ArrayField   => arrayFieldWrites.writes(af)
+    case of: ObjectField  => objectFieldWrites.writes(of)
+    case _                => Json.obj("error" -> "UnknownSchemaElement")
   }
+
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -46,17 +65,18 @@ case class StringField(
   def toJsonSchema: Map[String, Any] =
     Map(
       id -> Map(
-        "description" -> description,
         "type" -> "string",
+        "description" -> description,
         "minLength" -> minLength.getOrElse(0),
         "maxLength" -> maxLength.getOrElse(Int.MaxValue),
         "pattern" -> pattern.getOrElse("")
       )
+        .collect { case (k, Some(v)) => (k, v) } // filter out None values
     )
 }
 
 object StringField {
-  implicit val stringFieldFormat: OFormat[StringField] = Json.format
+  implicit val stringFieldWrites: OWrites[StringField] = Json.writes
 }
 
 /* Number: used for validating integer and float values */
@@ -73,8 +93,8 @@ case class NumberField(
   def toJsonSchema: Map[String, Any] = {
     Map(
       id -> Map(
-        "description" -> description,
         "type" -> "number",
+        "description" -> description,
         "multipleOf" -> multipleOf.getOrElse(1),
         "minimum" -> minimum.getOrElse(Int.MinValue),
         "exclusiveMinimum" -> exclusiveMinimum.getOrElse(0),
@@ -82,42 +102,43 @@ case class NumberField(
         "exclusiveMaximum" -> exclusiveMaximum.getOrElse(Int.MaxValue),
         "allowExclusiveMinMaxAsBool" -> allowExclusiveMinMaxAsBool
       )
+        .collect { case (k, Some(v)) => (k, v) }
     )
   }
 }
 
 object NumberField {
-  implicit val numberFieldFormat: OFormat[NumberField] = Json.format
+  implicit val numberFieldWrites: OWrites[NumberField] = Json.writes
 }
 
 case class BooleanField(id: String, description: String) extends SchemaElement {
   def toJsonSchema: Map[String, Any] = {
     Map(
       id -> Map(
+        "type" -> "boolean",
         "description" -> description,
-        "type" -> "boolean"
       )
     )
   }
 }
 
 object BooleanField {
-  implicit val booleanFieldFormat: OFormat[BooleanField] = Json.format
+  implicit val booleanFieldWrites: OWrites[BooleanField] = Json.writes
 }
 
 case class NullField(id: String, description: String) extends SchemaElement {
   def toJsonSchema: Map[String, Any] = {
     Map(
       id -> Map(
+        "type" -> "null",
         "description" -> description,
-        "type" -> "null"
       )
     )
   }
 }
 
 object NullField {
-  implicit val nullFieldFormat: OFormat[NullField] = Json.format
+  implicit val nullFieldWrites: OWrites[NullField] = Json.writes
 }
 
 case class ArrayField(
@@ -132,20 +153,21 @@ case class ArrayField(
   def toJsonSchema: Map[String, Any] = {
     Map(
       id -> Map(
-        "description" -> description,
         "type" -> "array",
+        "description" -> description,
         "items" -> items.toJsonSchema,
         "contains" -> contains.map(_.toJsonSchema),
         "minItems" -> minItems.getOrElse(0),
         "maxItems" -> maxItems.getOrElse(Int.MaxValue),
         "uniqueItems" -> uniqueItems.getOrElse(false)
       )
+        .collect { case (k, Some(v)) => (k, v) }
     )
   }
 }
 
 object ArrayField {
-  implicit val arrayFieldFormat: OFormat[ArrayField] = Json.format
+  implicit val arrayFieldWrites: OWrites[ArrayField] = Json.writes
 }
 
 case class ObjectField(
@@ -160,8 +182,8 @@ case class ObjectField(
   def toJsonSchema: Map[String, Any] = {
     Map(
       id -> Map(
-        "description" -> description,
         "type" -> "object",
+        "description" -> description,
         "properties" -> properties.view.mapValues(_.toJsonSchema).toMap,
         "required" -> required,
         "minProperties" -> minProperties.getOrElse(0),
@@ -171,16 +193,17 @@ case class ObjectField(
           case Right(schemaElement) => schemaElement.toJsonSchema
         }.getOrElse(false)
       )
+        .collect { case (k, Some(v)) => (k, v) }
     )
   }
 }
 
 object ObjectField {
-  implicit val objectFieldFormat: OFormat[ObjectField] = Json.format
+  implicit val objectFieldWrites: OWrites[ObjectField] = Json.writes
 }
 
 object EitherFormat {
-  implicit val eitherFormat: Format[Either[Boolean, SchemaElement]] = new Format[Either[Boolean, SchemaElement]] {
+  /* implicit val eitherFormat: Format[Either[Boolean, SchemaElement]] = new Format[Either[Boolean, SchemaElement]] {
     override def writes(o: Either[Boolean, SchemaElement]): JsValue = o match {
       case Left(bool)  => Json.toJson(bool)
       case Right(elem) => Json.toJson(elem)
@@ -189,6 +212,11 @@ object EitherFormat {
     override def reads(json: JsValue): JsResult[Either[Boolean, SchemaElement]] =
       json.validate[Boolean].map(Left(_))
         .orElse(json.validate[SchemaElement].map(Right(_)))
+  } */
+
+  implicit val eitherWrites: Writes[Either[Boolean, SchemaElement]] = {
+    case Left(bool)  => Json.toJson(bool)
+    case Right(elem) => Json.toJson(elem)
   }
 }
 
@@ -205,10 +233,10 @@ case class JsonSchemaForm(
   title: Option[String] = None,
   description: Option[String] = None,
   `type`: String,
-  properties: List[SchemaElement],
+  properties: Map[String, SchemaElement],
   required: List[String]
 ) {
-  def toJsonSchema: Map[String, Any] =
+  /* def toJsonSchema: Map[String, Any] =
     Map(
       "$schema" -> schema,
       "$id" -> id,
@@ -217,9 +245,20 @@ case class JsonSchemaForm(
       "type" -> `type`,
       "properties" -> properties.flatMap(_.toJsonSchema).toMap,
       "required" -> required
-    )
+    ) */
 }
 
 object JsonSchemaForm {
-  implicit val schemaFormFormat: OFormat[JsonSchemaForm] = Json.format
+  implicit val schemaFormWrites: OWrites[JsonSchemaForm] = Json.writes
 }
+
+/**
+ * TIP OF THE DAY:
+ *
+ * OWrites[T] is a subtype of Writes[T] that produces a JsObject instead of a JsValue.
+ * OWrites[T] is typically used when you’re converting a case class or other object-like structure to JSON, where the
+ * result should be a JSON object (i.e., a JsObject).
+ *
+ * On the other hand, Writes[T] is more general and can be used to convert any type T to a JsValue,
+ * which could be a JsObject, JsArray, JsString, JsNumber, JsBoolean, or JsNull.
+ */

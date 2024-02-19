@@ -30,7 +30,7 @@ trait SchemaElementBuilder {
       "https://json-schema.org/draft/2020-12/schema", // latest version
       id,
       `type` = `type`,
-      properties = Nil,
+      properties = Map.empty[String, SchemaElement],
       required = Nil
     )
 
@@ -80,7 +80,7 @@ trait SchemaElementBuilder {
     def withDescription(description: String): JsonSchemaForm =
       schema.copy(description = Some(description))
 
-    def withProperties(properties: List[SchemaElement]): JsonSchemaForm =
+    def withProperties(properties: Map[String, SchemaElement]): JsonSchemaForm =
       schema.copy(properties = properties)
 
     def withRequired(required: List[String]): JsonSchemaForm =
