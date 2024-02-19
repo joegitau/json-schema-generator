@@ -92,14 +92,25 @@ case class ObjectField(
   `type`: String = "object",
   minProperties: Option[Int] = None,
   maxProperties: Option[Int] = None,
-  additionalProperties: Option[Either[Boolean, SchemaElement]] = None
+  additionalProperties: Option[Either[Boolean, SchemaElement]] = None,
+  ifSchema: Option[Either[Boolean, SchemaElement]] = None,
+  thenSchema: Option[Either[Boolean, SchemaElement]] = None,
+  elseSchema: Option[Either[Boolean, SchemaElement]] = None,
+  notSchema: Option[Either[Boolean, SchemaElement]] = None,
+  anyOfSchema: Option[List[Either[Boolean, SchemaElement]]] = None,
+  oneOfSchema: Option[List[Either[Boolean, SchemaElement]]] = None,
+  allOfSchema: Option[List[Either[Boolean, SchemaElement]]] = None
 ) extends SchemaElement
 
 object ObjectField {
-  implicit val eitherWrites: Writes[Either[Boolean, SchemaElement]] = {
+  type BoolOrSchemaElement = Either[Boolean, SchemaElement]
+
+  implicit val eitherWrites: Writes[BoolOrSchemaElement] = {
     case Left(bool)  => Json.toJson(bool)
     case Right(elem) => Json.toJson(elem)
   }
+
+  implicit val listEitherWrites: Writes[List[BoolOrSchemaElement]] = Writes.list(eitherWrites)
 
   implicit val objectFieldWrites: OWrites[ObjectField] = Json.writes
 }
