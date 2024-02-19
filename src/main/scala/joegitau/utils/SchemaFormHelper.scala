@@ -1,7 +1,7 @@
 package joegitau.utils
 
-import joegitau.models.{FieldFormat, JsonSchemaForm, SchemaElement}
 import joegitau.models.JsonSchemaForm.schemaFormWrites
+import joegitau.models.{FieldFormat, JsonSchemaForm, SchemaElement}
 import play.api.libs.json._
 
 trait SchemaFormHelper extends SchemaElementBuilder {
@@ -16,14 +16,15 @@ trait SchemaFormHelper extends SchemaElementBuilder {
       "age" -> numberField("Age").withMin(18),
       "email" -> stringField("Email address").withFormat(FieldFormat.email),
       "address" -> objectField("Address")
-        .withProperties(
+        .withObjProperties(
           Map(
             "city" -> stringField("City"),
             "postalCode" -> numberField("Postal code"),
             "country" -> stringField("Country")
           )
         )
-        .withRequired("address" :: Nil)
+        .withObjRequired("address" :: Nil)
+        .withAdditionalProperties(Left(false))
     )
 
   private lazy val userSchema: JsonSchemaForm = jsonSchemaForm("user", "object")

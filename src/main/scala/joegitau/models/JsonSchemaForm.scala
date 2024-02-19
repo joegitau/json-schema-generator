@@ -32,6 +32,9 @@ object SchemaElement {
 case class StringField(
   description: String,
   `type`: String = "string",
+  id: Option[String] = None,
+  const: Option[String] = None,
+  enum: Option[List[String]] = None,
   default: Option[String] = None,
   minLength: Option[Int] = None,
   maxLength: Option[Int] = None,
@@ -47,7 +50,10 @@ object StringField {
 case class NumberField(
   description: String,
   `type`: String = "number",
+  id: Option[String] = None,
   default: Option[Int] = None,
+  const: Option[Int] = None,
+  enum: Option[List[Int]] = None,
   multipleOf: Option[Int] = None,
   minimum: Option[Int] = None,
   exclusiveMinimum: Option[Int] = None,
@@ -61,7 +67,12 @@ object NumberField {
   implicit val numberFieldWrites: OWrites[NumberField] = Json.writes
 }
 
-case class BooleanField(description: String, `type`: String = "boolean") extends SchemaElement
+case class BooleanField(
+  description: String,
+  `type`: String = "boolean",
+  id: Option[String] = None,
+  const: Option[Boolean] = None,
+) extends SchemaElement
 
 object BooleanField {
   implicit val booleanFieldWrites: OWrites[BooleanField] = Json.writes
@@ -77,6 +88,9 @@ case class ArrayField(
   description: String,
   items: SchemaElement,
   `type`: String = "array",
+  id: Option[String] = None,
+  const: Option[JsArray] = None,
+  enum: Option[List[JsArray]] = None,
   contains: Option[SchemaElement] = None,
   minItems: Option[Int] = None,
   maxItems: Option[Int] = None,
@@ -90,6 +104,9 @@ object ArrayField {
 case class ObjectField(
   description: String,
   `type`: String = "object",
+  id: Option[String] = None,
+  const: Option[JsValue] = None,
+  enum: Option[List[JsValue]] = None,
   properties: Option[Map[String, SchemaElement]] = None,
   required: Option[List[String]] = None,
   minProperties: Option[Int] = None,
@@ -117,6 +134,14 @@ object ObjectField {
   implicit val objectFieldWrites: OWrites[ObjectField] = Json.writes
 }
 
+/**
+ * Used for referencing a previously defined schema. The value of the "$ref" is a URI that references a schema.
+ */
+case class RefField(`$ref`: String) extends SchemaElement {
+  override def `type`: String = ""
+  override def description: String = ""
+}
+
 object FieldFormat extends Enumeration {
   type FieldFormat = Value
   val date, time, `date-time`, duration, email, uri, uuid, regex = Value
@@ -129,7 +154,7 @@ object FieldFormat extends Enumeration {
  * $id: sets a URI for the schema - which is useful for referencing elements of the schema from inside the schema document
  * title & description: useful for stating intent of the schema.
  * `type`: specifies the data type of the document
- *
+ * `$defs`: used to define reusable schemas
  */
 case class JsonSchemaForm(
   schema: String,
@@ -137,8 +162,9 @@ case class JsonSchemaForm(
   title: Option[String] = None,
   description: Option[String] = None,
   `type`: String,
-  properties: Map[String, SchemaElement],
-  required: List[String]
+  properties: Map[String, SchemaElement] = Map.empty,
+  required: List[String] = Nil,
+  `$defs`: Option[Map[String, SchemaElement]] = None
 )
 
 object JsonSchemaForm {
